@@ -7,8 +7,9 @@ import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import fileUpload from 'express-fileupload';
-import { corsOptions } from '../config/settings.js';
+import { corsOptions } from '../config/cors.config.js';
 import { env } from '../modules/helper.js';
+import logger from '../config/logger.config.js';
 import mainRouter from '../routes/mainRouter.js';
 
 export default class App {
@@ -49,8 +50,9 @@ export default class App {
   }
   startServer() {
     this.server.listen(this.PORT, () => {
-      console.log(process.env.NODE_ENV);
-      console.info(`[Server]: Running On http://localhost:${this.PORT}`);
+      logger.info(process.env.NODE_ENV);
+
+      logger.info(`[Server]: Running On http://localhost:${this.PORT}`);
     });
   }
 }
