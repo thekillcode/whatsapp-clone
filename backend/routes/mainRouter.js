@@ -4,7 +4,6 @@ const mainRouter = new Router();
 
 // Add routes
 mainRouter.get('/', (req, res) => {
-  throw new Error('error');
   return res.json({ message: 'Welcome to Api Server' });
 });
 // mainRouter.post('/', SessionController.store);
