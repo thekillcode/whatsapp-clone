@@ -7,10 +7,12 @@ import mongoSanitize from 'express-mongo-sanitize';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import fileUpload from 'express-fileupload';
+import createHttpErrors from 'http-errors';
 import { corsOptions } from '../config/cors.config.js';
 import { env } from '../modules/helper.js';
 import logger from '../config/logger.config.js';
-import mainRouter from '../routes/mainRouter.js';
+import routes from '../routes/routes.js';
+import { mongodbConnect } from '../database/database.js';
 
 export default class App {
   constructor() {
@@ -21,6 +23,7 @@ export default class App {
     this.loadPlugins();
     this.loadRoutes();
     this.loadExceptionMiddlewares();
+    mongodbConnect(this.server);
     this.startServer();
   }
   serverInit() {
@@ -44,15 +47,29 @@ export default class App {
       })
     );
   }
-  loadExceptionMiddlewares() {}
+  loadExceptionMiddlewares() {
+    this.app.use((req, res, next) => {
+      next(createHttpErrors.NotFound('This Route Does Not Exists'));
+    });
+    this.app.use(async (err, req, res, next) => {
+      res.status(err.status || 500);
+      return res.json({
+        error: {
+          status: err.status || 500,
+          message: err.message,
+        },
+      });
+    });
+  }
   loadRoutes() {
-    this.app.use('/', mainRouter);
+    this.app.use('/api/v1', routes);
   }
   startServer() {
     this.server.listen(this.PORT, () => {
       logger.info(process.env.NODE_ENV);
 
       logger.info(`[Server]: Running On http://localhost:${this.PORT}`);
+      logger.info(`[process]: PID -> ${process.pid}`);
     });
   }
 }
